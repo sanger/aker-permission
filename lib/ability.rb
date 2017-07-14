@@ -1,31 +1,20 @@
-# https://github.com/CanCanCommunity/cancancan/wiki/Defining-Abilities
+require 'set'
+
+# https://github.com/ryanb/cancan/wiki/Defining-Abilities-with-Blocks
 class Ability
   include CanCan::Ability
 
   def initialize(user)
-    can :create, AkerPermissionGem::Accessible
-
-    can :read, AkerPermissionGem::Accessible do |accessible|
-      permitted?(accessible, user, :r)
+    can do |permission_type, subject_class, subject|
+      if !subject
+        [:create, :read].include?(permission_type)
+      else
+        permitted?(subject, user, permission_type)
+      end
     end
-
-    can :write, AkerPermissionGem::Accessible do |accessible|
-      permitted?(accessible, user, :w)
-    end
-
-    can :execute, AkerPermissionGem::Accessible do |accessible|
-      permitted?(accessible, user, :x)
-    end
-
   end
 
-  def permitted?(accessible, user_data, access)
-    #if user_data.is_a? Hash
-    #  user = user_data['user']
-    #  groups = user_data['groups']
-    #  return accessible.permitted?(user['email'], access) || accessible.permitted?(groups, access)
-    #else
-      accessible.permitted?(user_data.email, access) || accessible.permitted?(user_data.groups, access)
-    #end
+  def permitted?(accessible, user, permission_type)
+    permission_type==:create || accessible&.permitted?(user.email, permission_type) || accessible&.permitted?(user.groups, permission_type)
   end
 end

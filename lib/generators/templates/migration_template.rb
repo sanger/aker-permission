@@ -2,13 +2,12 @@ class CreatePermissions < ActiveRecord::Migration[5.0]
   def change
     create_table :permissions do |t|
       t.string :permitted, null: false
-      t.boolean :r, null: false, default: false
-      t.boolean :w, null: false, default: false
-      t.boolean :x, null: false, default: false
-      t.references :accessible, null: false, polymorphic:true, type: accessible_id_type, index: true
+      t.string :permission_type, null: false
+      t.references :accessible, null: false, polymorphic: true, type: accessible_id_type, index: true
       t.timestamps
     end
     add_index :permissions, :permitted
+    add_index :permissions, [:permitted, :permission_type, :accessible_id, :accessible_type ], unique: true
   end
 
   def accessible_id_type
